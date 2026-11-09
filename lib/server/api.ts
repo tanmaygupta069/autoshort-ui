@@ -1,4 +1,5 @@
 import "server-only";
+import { cache } from "react";
 import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 
@@ -28,12 +29,17 @@ export async function backend(path: string, init: RequestInit = {}, token?: stri
 }
 
 /** GET JSON for server components; sends the user to /login when the session is gone. */
-export async function getJson<T>(path: string): Promise<T> {
+const fetchOnce = cache(async (path: string): Promise<unknown> => {
   const res = await backend(path);
   if (res.status === 401) redirect("/login");
   if (!res.ok) {
     const detail = await res.json().then((j) => j.detail).catch(() => res.statusText);
     throw new Error(`${path}: ${detail}`);
   }
-  return res.json() as Promise<T>;
+  return res.json();
+});
+
+/** Identical GETs within one page render (the layout and page both ask for /me) hit the backend once. */
+export async function getJson<T>(path: string): Promise<T> {
+  return (await fetchOnce(path)) as T;
 }
