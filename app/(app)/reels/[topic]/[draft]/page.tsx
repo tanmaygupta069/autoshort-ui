@@ -9,10 +9,15 @@ import type { TopicDetail } from "@/lib/types";
 
 export default async function ReelPage({ params }: PageProps<"/reels/[topic]/[draft]">) {
   const { topic, draft } = await params;
-  const res = await backend(`/topics/${encodeURIComponent(topic)}`);
+  const [res, mediaRes] = await Promise.all([
+    backend(`/topics/${encodeURIComponent(topic)}`),
+    backend(`/drafts/${encodeURIComponent(topic)}/${encodeURIComponent(draft)}/media`).catch(() => null),
+  ]);
   if (res.status === 404) notFound();
   if (!res.ok) throw new Error("could not load this reel");
   const t = (await res.json()) as TopicDetail;
+  const media: { video_url: string | null; thumb_url: string | null } =
+    mediaRes && mediaRes.ok ? await mediaRes.json() : { video_url: null, thumb_url: null };
   const d = t.drafts.find((x) => String(x.draft) === draft);
   if (!d) notFound();
   const notes = t.notes;
@@ -26,11 +31,23 @@ export default async function ReelPage({ params }: PageProps<"/reels/[topic]/[dr
       <p className="text-sm text-muted">{t.topic_id} · draft {d.draft} of {t.drafts.length} · {d.duration_s ? `${d.duration_s}s · ` : ""}updated {when(d.updated_at)}</p>
 
       <div className="grid gap-6 md:grid-cols-[18rem_1fr]">
-        <div className="card flex aspect-[9/16] w-full max-w-72 items-center justify-center text-center text-sm text-muted">
-          Video preview appears here once video storage is connected.
-          <br />
-          File: {d.video_file || "none"}
-        </div>
+        {media.video_url ? (
+          <video
+            key={media.video_url}
+            className="aspect-[9/16] w-full max-w-72 rounded-xl border border-line bg-black object-contain"
+            src={media.video_url}
+            poster={media.thumb_url ?? undefined}
+            controls
+            playsInline
+            preload="metadata"
+          />
+        ) : (
+          <div className="card flex aspect-[9/16] w-full max-w-72 items-center justify-center text-center text-sm text-muted">
+            No stored video for this draft yet.
+            <br />
+            File: {d.video_file || "none"}
+          </div>
+        )}
         <div className="space-y-4">
           <section className="card space-y-3">
             <div>
