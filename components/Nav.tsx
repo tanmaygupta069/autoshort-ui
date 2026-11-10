@@ -13,7 +13,7 @@ const LINKS = [
 export function Nav({ me }: { me: Me }) {
   const path = usePathname();
   const router = useRouter();
-  const links = [...LINKS, ...(me.role === "admin" ? [{ href: "/admin/users", label: "Users" }] : []), { href: "/settings", label: "Settings" }];
+  const links = [...LINKS, ...(me.role === "admin" ? [{ href: "/admin/users", label: "Users" }, { href: "/admin/waitlist", label: "Waitlist" }] : []), { href: "/settings", label: "Settings" }];
 
   async function logout() {
     await fetch("/api/auth/logout", { method: "POST" });

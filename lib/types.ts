@@ -46,5 +46,6 @@ export interface Summary {
 }
 
 export interface UserRow { id: string; email: string; name: string; role: Role; active: boolean; created_at: string; last_login_at: string | null }
+export interface WaitlistRow { id: string; email: string; status: "waiting" | "invited" | "dismissed"; niche: string; requests: number; first_at: string; last_at: string; notified_at: string | null; decided_at: string | null }
 export interface SessionRow { sid: string; created: number; ip: string; ua: string; current: boolean }
 export interface Channel { id: string; display_name: string; youtube_channel: string; instagram_handle: string; daily_cap: number | null; research_min_pending: number | null; active: boolean }

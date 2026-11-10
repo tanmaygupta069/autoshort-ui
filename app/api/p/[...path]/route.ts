@@ -3,7 +3,7 @@ import { backend } from "@/lib/server/api";
 import { sameOrigin } from "@/lib/server/origin";
 
 // Only these backend areas are reachable from the browser through this proxy.
-const ALLOWED = ["topics", "drafts", "users", "channels", "summary", "auth/sessions", "me"];
+const ALLOWED = ["topics", "drafts", "users", "waitlist", "channels", "summary", "auth/sessions", "me"];
 
 async function forward(req: Request, ctx: RouteContext<"/api/p/[...path]">) {
   const { path } = await ctx.params;

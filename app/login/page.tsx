@@ -25,7 +25,7 @@ export default function Login() {
     try {
       await post("/api/auth/request", { email });
       setStep("code");
-      setMsg("If that email is invited, a 6-digit code is on its way. It expires in 10 minutes.");
+      setMsg("Check your email. If you are invited it has a 6-digit code (valid for 10 minutes); if not, it tells you that you are on the waitlist.");
     } catch (err) {
       setMsg((err as Error).message);
     } finally {
@@ -52,7 +52,7 @@ export default function Login() {
       <h1 className="mb-1 text-2xl font-semibold tracking-tight">
         Auto<span className="text-accent">Short</span>
       </h1>
-      <p className="mb-6 text-sm text-muted">Sign in with your invited email. No password: we send you a code.</p>
+      <p className="mb-6 text-sm text-muted">AutoShort is invite-only for now. Enter your email: invited people get a sign-in code, everyone else joins the waitlist. No passwords.</p>
       {step === "email" ? (
         <form onSubmit={sendCode} className="card space-y-4">
           <div>
