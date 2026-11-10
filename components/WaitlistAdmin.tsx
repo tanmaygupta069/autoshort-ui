@@ -51,6 +51,7 @@ export function WaitlistAdmin({ rows }: { rows: WaitlistRow[] }) {
           <div key={r.id} className="card flex flex-wrap items-center justify-between gap-3">
             <div className="min-w-0">
               <div className="truncate font-medium">{r.email}</div>
+              {r.niche && <div className="text-sm text-muted">wants to make: {r.niche}</div>}
               <div className="text-xs text-muted">
                 first tried {ago(r.first_at)} · {r.requests} {r.requests === 1 ? "attempt" : "attempts"} · {r.notified_at ? "told they are on the list" : "not emailed yet"}
               </div>

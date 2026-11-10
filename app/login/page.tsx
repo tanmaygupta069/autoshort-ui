@@ -7,6 +7,7 @@ export default function Login() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
+  const [niche, setNiche] = useState("");
   const [step, setStep] = useState<"email" | "code">("email");
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState("");
@@ -23,7 +24,7 @@ export default function Login() {
     setBusy(true);
     setMsg("");
     try {
-      await post("/api/auth/request", { email });
+      await post("/api/auth/request", { email, niche: niche.trim() });
       setStep("code");
       setMsg("Check your email. If you are invited it has a 6-digit code (valid for 10 minutes); if not, it tells you that you are on the waitlist.");
     } catch (err) {
@@ -58,6 +59,10 @@ export default function Login() {
           <div>
             <label className="label" htmlFor="email">Email</label>
             <input id="email" type="email" required autoFocus autoComplete="email" className="input" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" />
+          </div>
+          <div>
+            <label className="label" htmlFor="niche">Not invited yet? What would you make (optional)</label>
+            <input id="niche" maxLength={200} className="input" value={niche} onChange={(e) => setNiche(e.target.value)} placeholder="e.g. cooking shorts" />
           </div>
           <button className="btn-primary w-full" disabled={busy}>{busy ? "Sending..." : "Email me a code"}</button>
         </form>
