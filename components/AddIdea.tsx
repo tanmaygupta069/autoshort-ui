@@ -5,10 +5,10 @@ import { useRouter } from "next/navigation";
 import { call } from "@/lib/client";
 import type { Channel } from "@/lib/types";
 
-export function AddIdea({ channels }: { channels: Channel[] }) {
+export function AddIdea({ channels, defaultChannel = "" }: { channels: Channel[]; defaultChannel?: string }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
-  const [channel, setChannel] = useState(channels[0]?.id ?? "");
+  const [channel, setChannel] = useState(channels.some((c) => c.id === defaultChannel) ? defaultChannel : (channels[0]?.id ?? ""));
   const [topic, setTopic] = useState("");
   const [notes, setNotes] = useState("");
   const [priority, setPriority] = useState(3);

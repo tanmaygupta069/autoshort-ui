@@ -1,15 +1,19 @@
 import Link from "next/link";
 import { Badge } from "@/components/Badge";
 import { getJson } from "@/lib/server/api";
+import { selectedChannel, withChannel } from "@/lib/server/channel";
 import { ago } from "@/lib/format";
-import type { Draft, Summary, Topic } from "@/lib/types";
+import type { Channel, Draft, Summary, Topic } from "@/lib/types";
 
-export default async function Overview() {
-  const [summary, waiting, proposed] = await Promise.all([
-    getJson<Summary>("/summary"),
-    getJson<Draft[]>("/drafts?status=ready_for_review"),
-    getJson<Topic[]>("/topics?status=proposed"),
+export default async function Overview({ searchParams }: PageProps<"/">) {
+  const channel = await selectedChannel(await searchParams);
+  const [summary, waiting, proposed, channels] = await Promise.all([
+    getJson<Summary>(withChannel("/summary", channel)),
+    getJson<Draft[]>(withChannel("/drafts?status=ready_for_review", channel)),
+    getJson<Topic[]>(withChannel("/topics?status=proposed", channel)),
+    getJson<Channel[]>("/channels"),
   ]);
+  const scope = channel ? (channels.find((c) => c.id === channel)?.display_name || channel) : "All channels";
   const n = (s: string) => summary.topics[s] ?? 0;
   const tiles = [
     { label: "Reels to review", value: waiting.length, href: "/reels", hot: waiting.length > 0 },
@@ -28,7 +32,7 @@ export default async function Overview() {
         ))}
       </div>
       <p className="text-sm text-muted">
-        Started today: {summary.first_drafts_today} of {summary.daily_cap} · Last research: {ago(summary.last_research)}
+        <span className="text-white">{scope}</span> · Started today: {summary.first_drafts_today} of {summary.daily_cap} · Last research: {ago(summary.last_research)}
       </p>
 
       <section>

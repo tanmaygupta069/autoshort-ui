@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import type { Me } from "@/lib/types";
+import { ChannelFilter } from "@/components/ChannelFilter";
+import type { Channel, Me } from "@/lib/types";
 
 const LINKS = [
   { href: "/", label: "Overview" },
@@ -10,7 +11,7 @@ const LINKS = [
   { href: "/ideas", label: "Ideas" },
 ];
 
-export function Nav({ me }: { me: Me }) {
+export function Nav({ me, channels, channelCookie }: { me: Me; channels: Channel[]; channelCookie: string }) {
   const path = usePathname();
   const router = useRouter();
   const links = [...LINKS, ...(me.role === "admin" ? [{ href: "/admin/users", label: "Users" }, { href: "/admin/channels", label: "Channels" }, { href: "/admin/waitlist", label: "Waitlist" }] : []), { href: "/settings", label: "Settings" }];
@@ -37,6 +38,7 @@ export function Nav({ me }: { me: Me }) {
             );
           })}
         </nav>
+        <ChannelFilter channels={channels} cookieValue={channelCookie} />
         <div className="flex items-center gap-3 text-xs text-muted">
           <span className="hidden sm:inline">{me.email} · {me.role}</span>
           <button onClick={logout} className="rounded-md border border-line px-2.5 py-1 hover:text-white">Sign out</button>

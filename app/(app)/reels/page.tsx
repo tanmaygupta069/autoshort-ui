@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Badge } from "@/components/Badge";
 import { getJson } from "@/lib/server/api";
+import { selectedChannel, withChannel } from "@/lib/server/channel";
 import { ago } from "@/lib/format";
 import type { Draft } from "@/lib/types";
 
@@ -15,7 +16,8 @@ const TABS = [
 export default async function Reels({ searchParams }: PageProps<"/reels">) {
   const sp = await searchParams;
   const status = typeof sp.status === "string" ? sp.status : "ready_for_review";
-  const drafts = await getJson<Draft[]>(`/drafts${status ? `?status=${encodeURIComponent(status)}` : ""}`);
+  const channel = await selectedChannel(sp);
+  const drafts = await getJson<Draft[]>(withChannel(`/drafts${status ? `?status=${encodeURIComponent(status)}` : ""}`, channel));
   return (
     <div className="space-y-4">
       <h1 className="text-xl font-semibold">Reels</h1>
@@ -35,7 +37,7 @@ export default async function Reels({ searchParams }: PageProps<"/reels">) {
               <Link href={`/reels/${d.topic_id}/${d.draft}`} className="card flex items-center justify-between gap-3 hover:border-accent">
                 <span className="min-w-0">
                   <span className="block truncate font-medium">{d.yt_title || d.topic_id}</span>
-                  <span className="text-xs text-muted">{d.topic_id} · draft {d.draft} · {d.duration_s ? `${d.duration_s}s · ` : ""}{ago(d.updated_at)}</span>
+                  <span className="text-xs text-muted">{!channel && `${d.channel} · `}{d.topic_id} · draft {d.draft} · {d.duration_s ? `${d.duration_s}s · ` : ""}{ago(d.updated_at)}</span>
                 </span>
                 <Badge status={d.status} />
               </Link>

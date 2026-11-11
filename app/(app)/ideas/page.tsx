@@ -3,6 +3,7 @@ import { AddIdea } from "@/components/AddIdea";
 import { Badge } from "@/components/Badge";
 import { IdeaActions } from "@/components/IdeaActions";
 import { getJson } from "@/lib/server/api";
+import { selectedChannel, withChannel } from "@/lib/server/channel";
 import type { Channel, Me, Topic } from "@/lib/types";
 
 const TABS = [
@@ -17,17 +18,18 @@ const TABS = [
 export default async function Ideas({ searchParams }: PageProps<"/ideas">) {
   const sp = await searchParams;
   const status = typeof sp.status === "string" ? sp.status : "proposed";
+  const channel = await selectedChannel(sp);
   const [me, topics] = await Promise.all([
     getJson<Me>("/me"),
-    getJson<Topic[]>(`/topics${status ? `?status=${encodeURIComponent(status)}` : ""}`),
+    getJson<Topic[]>(withChannel(`/topics${status ? `?status=${encodeURIComponent(status)}` : ""}`, channel)),
   ]);
-  const channels = me.role === "admin" ? await getJson<Channel[]>("/channels") : [];
+  const channels = me.role === "admin" ? (await getJson<Channel[]>("/channels")).filter((c) => c.status === "active") : []; // ideas only go to live channels
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-3">
         <h1 className="text-xl font-semibold">Ideas</h1>
       </div>
-      {me.role === "admin" && channels.length > 0 && <AddIdea channels={channels} />}
+      {me.role === "admin" && channels.length > 0 && <AddIdea channels={channels} defaultChannel={channel} />}
       <div className="flex flex-wrap gap-2 text-sm">
         {TABS.map(([value, label]) => (
           <Link key={label} href={value ? `/ideas?status=${value}` : "/ideas?status="} className={`rounded-full px-3 py-1 ${status === value ? "bg-accent text-white" : "bg-surface2 text-muted hover:text-white"}`}>
