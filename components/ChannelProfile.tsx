@@ -74,6 +74,7 @@ export function ChannelProfile({ channel, profile }: { channel: Channel; profile
             <div><div className="label">What makes a good idea</div><span className="text-muted">{p.research?.idea_rules}</span></div>
             <div><div className="label">Voice</div><span className="text-muted">{p.voice_and_tone?.persona}</span></div>
             <div><div className="label">Hook rule</div><span className="text-muted">{p.voice_and_tone?.hook_rule}</span></div>
+            <div><div className="label">Background music</div><span className="text-muted">{p.audio?.music?.mode === "rotate" ? `a different track each reel, from: ${(p.audio.music.vibes ?? []).join(", ")}` : "one fixed track"}</span></div>
             <div><div className="label">What the scenes can show</div><span className="text-muted">{p.visual?.scene_limits}</span></div>
             <div className="flex items-center gap-2">
               <div className="label !mb-0">Palette</div>
