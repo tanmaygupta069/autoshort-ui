@@ -3,9 +3,10 @@ import { notFound } from "next/navigation";
 import { Badge } from "@/components/Badge";
 import { DecisionForm } from "@/components/DecisionForm";
 import { NoteForm } from "@/components/NoteForm";
-import { backend } from "@/lib/server/api";
+import { PublishPanel } from "@/components/PublishPanel";
+import { backend, getJson } from "@/lib/server/api";
 import { when } from "@/lib/format";
-import type { TopicDetail } from "@/lib/types";
+import type { Connection, Me, Publication, TopicDetail } from "@/lib/types";
 
 export default async function ReelPage({ params }: PageProps<"/reels/[topic]/[draft]">) {
   const { topic, draft } = await params;
@@ -21,6 +22,14 @@ export default async function ReelPage({ params }: PageProps<"/reels/[topic]/[dr
   const d = t.drafts.find((x) => String(x.draft) === draft);
   if (!d) notFound();
   const notes = t.notes;
+  const publishable = d.status === "approved" || d.status === "published";
+  const [me, connections, publications] = publishable
+    ? await Promise.all([
+        getJson<Me>("/me"),
+        getJson<Connection[]>(`/channels/${encodeURIComponent(t.channel)}/connections`).catch(() => [] as Connection[]), // reviewers may not list accounts
+        getJson<Publication[]>(`/drafts/${encodeURIComponent(topic)}/${encodeURIComponent(draft)}/publications`),
+      ])
+    : [null, [] as Connection[], [] as Publication[]];
   return (
     <div className="space-y-6">
       <Link href="/reels" className="text-sm text-muted hover:text-white">← Reels</Link>
@@ -69,6 +78,9 @@ export default async function ReelPage({ params }: PageProps<"/reels/[topic]/[dr
             )}
           </section>
           {d.status === "ready_for_review" && <DecisionForm topicId={t.topic_id} draft={d.draft} />}
+          {publishable && me && (
+            <PublishPanel topicId={t.topic_id} draftNo={d.draft} channelId={t.channel} isAdmin={me.role === "admin"} connections={connections} publications={publications} />
+          )}
           {d.feedback && d.status !== "ready_for_review" && (
             <div className="card text-sm"><div className="label">Feedback given</div>{d.feedback}</div>
           )}

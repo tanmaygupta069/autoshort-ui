@@ -12,7 +12,9 @@ const TONE: Record<string, string> = {
 };
 const LABEL: Record<string, string> = { generating: "Drafting profile", ready: "Needs your review", active: "Live", failed: "Draft failed" };
 
-export default async function ChannelsPage() {
+export default async function ChannelsPage({ searchParams }: PageProps<"/admin/channels">) {
+  const sp = await searchParams;
+  const connectError = typeof sp.connect_error === "string" ? sp.connect_error : "";
   const me = await getJson<Me>("/me");
   if (me.role !== "admin") redirect("/");
   const [channels, styles] = await Promise.all([getJson<Channel[]>("/channels"), getJson<StylePack[]>("/style-packs")]);
@@ -22,6 +24,7 @@ export default async function ChannelsPage() {
       <div className="flex items-center justify-between gap-3">
         <h1 className="text-xl font-semibold">Channels</h1>
       </div>
+      {connectError && <p className="text-sm text-red-300" role="alert">Could not connect the account: {connectError}</p>}
       <ChannelNew styles={styles} />
       <ul className="space-y-2">
         {channels.map((c) => (
