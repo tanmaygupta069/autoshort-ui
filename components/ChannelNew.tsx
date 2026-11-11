@@ -3,12 +3,14 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { call } from "@/lib/client";
-import type { Channel } from "@/lib/types";
+import { StyleCards } from "@/components/StyleCards";
+import type { Channel, StylePack } from "@/lib/types";
 
-export function ChannelNew() {
+export function ChannelNew({ styles }: { styles: StylePack[] }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [f, setF] = useState({ display_name: "", niche: "", audience: "", tone: "", youtube_channel: "", instagram_handle: "" });
+  const [style, setStyle] = useState(styles[0]?.id ?? "generic");
   const [err, setErr] = useState("");
   const [busy, setBusy] = useState(false);
   const set = (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement>) => setF({ ...f, [k]: e.target.value });
@@ -18,7 +20,7 @@ export function ChannelNew() {
     setBusy(true);
     setErr("");
     try {
-      const ch = await call<Channel>("channels", "POST", { ...f, style_pack: "generic" });
+      const ch = await call<Channel>("channels", "POST", { ...f, style_pack: style });
       router.push(`/admin/channels/${ch.id}`);
       router.refresh();
     } catch (e2) {
@@ -58,7 +60,11 @@ export function ChannelNew() {
           <input id="cg" maxLength={100} className="input" value={f.instagram_handle} onChange={set("instagram_handle")} />
         </div>
       </div>
-      <p className="text-xs text-muted">Look: the general explainer style (headlines, numbers, comparisons, callouts). Niche-specific looks are added per channel later.</p>
+      <div className="space-y-2">
+        <div className="label !mb-0">Animation style</div>
+        <StyleCards styles={styles} value={style} onChange={setStyle} />
+        <p className="text-xs text-muted">You can change this later on the channel page; it applies to reels made after the change.</p>
+      </div>
       {err && <p className="text-sm text-red-300" role="alert">{err}</p>}
       <div className="flex gap-2">
         <button className="btn-primary" disabled={busy}>{busy ? "Creating..." : "Create and draft profile"}</button>
