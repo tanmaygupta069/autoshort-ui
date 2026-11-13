@@ -1,14 +1,16 @@
 @import "tailwindcss";
 
 :root {
-  --bg: #121212;
-  --surface: #1c1c20;
-  --surface-2: #26262c;
-  --line: #34343c;
-  --text: #f2f2f5;
-  --muted: #9aa0aa;
-  --accent: #9b5cff;
-  --amber: #f5821f;
+  --bg: #14102a;
+  --surface: #1f1a40;
+  --surface-2: #2c2559;
+  --line: #5b4fa8;
+  --text: #f4f0ff;
+  --muted: #a99fd6;
+  --accent: #ff4fa3;
+  --amber: #ffb830;
+  --ok: #3ddc84;
+  --bad: #ff5c5c;
 }
 
 @theme inline {
@@ -19,18 +21,79 @@
   --color-muted: var(--muted);
   --color-accent: var(--accent);
   --color-amber: var(--amber);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-pixel-body);
+  --font-mono: var(--font-pixel-mono);
+  --font-display: var(--font-pixel-display);
+  --radius-xs: 0px;
+  --radius-sm: 0px;
+  --radius-md: 0px;
+  --radius-lg: 0px;
+  --radius-xl: 0px;
+  --radius-2xl: 0px;
+  --radius-3xl: 0px;
 }
 
-html { color-scheme: dark; }
-body { background: var(--bg); color: var(--text); font-family: var(--font-geist-sans), system-ui, sans-serif; }
+html { color-scheme: dark; image-rendering: pixelated; }
+body {
+  background-color: var(--bg);
+  /* faint dither grid, like a tile map */
+  background-image:
+    linear-gradient(rgba(255,255,255,.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.03) 1px, transparent 1px);
+  background-size: 16px 16px;
+  color: var(--text);
+  font-family: var(--font-pixel-body), "Courier New", monospace;
+  font-size: 16px;
+  -webkit-font-smoothing: none;
+  font-smooth: never;
+}
+input[type="checkbox"], input[type="radio"] { accent-color: var(--accent); }
+img, canvas, video { image-rendering: pixelated; }
+h1, h2, h3 { font-family: var(--font-pixel-display), monospace; line-height: 1.5; letter-spacing: 0; }
+h1 { font-size: 1.25rem; } h2 { font-size: 1rem; } h3 { font-size: .875rem; }
+code, pre, .font-mono { font-family: var(--font-pixel-mono), monospace; font-size: 1.15em; }
+::selection { background: var(--accent); color: #fff; }
 
-.btn { @apply inline-flex items-center justify-center rounded-lg px-3.5 py-2 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-50; }
-.btn-primary { @apply inline-flex items-center justify-center rounded-lg px-3.5 py-2 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-50 bg-accent text-white hover:brightness-110; }
-.btn-ok { @apply inline-flex items-center justify-center rounded-lg px-3.5 py-2 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-50 bg-emerald-600 text-white hover:bg-emerald-500; }
-.btn-ghost { @apply inline-flex items-center justify-center rounded-lg px-3.5 py-2 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-50 border border-line bg-surface2 text-white hover:bg-line; }
-.btn-danger { @apply inline-flex items-center justify-center rounded-lg px-3.5 py-2 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-50 border border-red-500/40 bg-red-500/10 text-red-300 hover:bg-red-500/20; }
-.input { @apply w-full rounded-lg border border-line bg-surface2 px-3 py-2 text-sm text-white placeholder:text-muted focus:border-accent focus:outline-none; }
-.card { @apply rounded-xl border border-line bg-surface p-4; }
-.label { @apply mb-1 block text-xs font-medium uppercase tracking-wide text-muted; }
+/* square everything: pills and rounded corners become hard pixel edges */
+[class*="rounded"] { border-radius: 0 !important; }
+*, *::before, *::after { transition-timing-function: steps(4, end) !important; }
+.border, .border-b, .border-t, .border-l, .border-r { border-width: 2px; }
+.border { border-width: 2px; }
+.border-b { border-bottom-width: 2px; } .border-t { border-top-width: 2px; }
+.border-l { border-left-width: 2px; } .border-r { border-right-width: 2px; }
+.backdrop-blur { backdrop-filter: none !important; }
+
+/* chunky scrollbars */
+* { scrollbar-width: thin; scrollbar-color: var(--accent) var(--surface); }
+::-webkit-scrollbar { width: 12px; height: 12px; }
+::-webkit-scrollbar-track { background: var(--surface); }
+::-webkit-scrollbar-thumb { background: var(--accent); border: 2px solid var(--surface); }
+
+:focus-visible { outline: 2px dashed var(--amber); outline-offset: 2px; }
+
+@keyframes blink { 50% { opacity: 0; } }
+.blink { animation: blink 1s steps(1) infinite; }
+@media (prefers-reduced-motion: reduce) { .blink { animation: none; } }
+
+@layer components {
+  .btn, .btn-primary, .btn-ok, .btn-ghost, .btn-danger {
+    @apply inline-flex items-center justify-center border-2 px-3.5 py-2 text-sm font-medium uppercase tracking-wide transition disabled:cursor-not-allowed disabled:opacity-50;
+    font-family: var(--font-pixel-display), monospace;
+    font-size: .625rem;
+    line-height: 1.4;
+    border-color: #000;
+    box-shadow: 4px 4px 0 #000;
+  }
+  .btn:not(:disabled):active, .btn-primary:not(:disabled):active, .btn-ok:not(:disabled):active,
+  .btn-ghost:not(:disabled):active, .btn-danger:not(:disabled):active { transform: translate(4px, 4px); box-shadow: 0 0 0 #000; }
+  .btn-primary { @apply bg-accent text-white hover:brightness-110; }
+  .btn-ok { background: var(--ok); color: #0b2a17; }
+  .btn-ok:hover { filter: brightness(1.1); }
+  .btn-ghost { @apply bg-surface2 text-white hover:bg-line; }
+  .btn-danger { background: var(--bad); color: #2a0a0a; }
+  .btn-danger:hover { filter: brightness(1.1); }
+  .input { @apply w-full border-2 bg-surface2 px-3 py-2 text-sm text-white placeholder:text-muted focus:outline-none; border-color: var(--line); box-shadow: inset 3px 3px 0 rgba(0,0,0,.35); }
+  .input:focus { border-color: var(--accent); }
+  .card { @apply border-2 bg-surface p-4; border-color: var(--line); box-shadow: 6px 6px 0 #000; }
+  .label { @apply mb-1 block uppercase text-muted; font-family: var(--font-pixel-display), monospace; font-size: .625rem; letter-spacing: .05em; }
+}

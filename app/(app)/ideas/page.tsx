@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { PageHead } from "@/components/PageHead";
 import { AddIdea } from "@/components/AddIdea";
 import { Badge } from "@/components/Badge";
 import { IdeaActions } from "@/components/IdeaActions";
@@ -26,9 +27,7 @@ export default async function Ideas({ searchParams }: PageProps<"/ideas">) {
   const channels = me.role === "admin" ? (await getJson<Channel[]>("/channels")).filter((c) => c.status === "active") : []; // ideas only go to live channels
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between gap-3">
-        <h1 className="text-xl font-semibold">Ideas</h1>
-      </div>
+      <PageHead title="Ideas" searchParams={sp} />
       {me.role === "admin" && channels.length > 0 && <AddIdea channels={channels} defaultChannel={channel} />}
       <div className="flex flex-wrap gap-2 text-sm">
         {TABS.map(([value, label]) => (

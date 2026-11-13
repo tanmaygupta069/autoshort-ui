@@ -1,10 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useConfirm } from "@/components/Confirm";
 import { call } from "@/lib/client";
 import { ago } from "@/lib/format";
+import { PixelInstagram, PixelYouTube } from "@/components/PixelLogos";
 import type { Connection, Publication } from "@/lib/types";
 
 const LABEL: Record<string, string> = { youtube: "YouTube", instagram: "Instagram" };
@@ -15,10 +17,12 @@ const TONE: Record<string, string> = {
   failed: "bg-red-500/15 text-red-300",
 };
 
-export function PublishPanel({ topicId, draftNo, channelId, isAdmin, connections, publications }: {
-  topicId: string; draftNo: number; channelId: string; isAdmin: boolean; connections: Connection[]; publications: Publication[];
+export function PublishPanel({ topicId, draftNo, channelId, isAdmin, connections, publications, autoOpen, onClose }: {
+  topicId: string; draftNo: number; channelId: string; isAdmin: boolean; connections: Connection[]; publications: Publication[]; autoOpen?: boolean; onClose?: () => void;
 }) {
   const router = useRouter();
+  const { confirm, dialog: confirmDialog } = useConfirm();
+  const dlg = useRef<HTMLDialogElement>(null);
   const live = connections.filter((c) => c.status === "connected");
   const pubOf = (p: string) => publications.find((x) => x.platform === p);
   const open = (p: string) => !pubOf(p) || pubOf(p)!.status === "failed"; // can (re)publish here
@@ -26,6 +30,10 @@ export function PublishPanel({ topicId, draftNo, channelId, isAdmin, connections
   const [privacy, setPrivacy] = useState("public");
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
+
+  useEffect(() => {
+    if (autoOpen) dlg.current?.showModal();
+  }, [autoOpen]);
 
   // while something is being posted, check back every few seconds
   const working = publications.some((x) => x.status === "queued" || x.status === "publishing");
@@ -37,7 +45,7 @@ export function PublishPanel({ topicId, draftNo, channelId, isAdmin, connections
 
   async function publish(platforms: string[]) {
     const where = platforms.map((p) => `${LABEL[p]} (${connections.find((c) => c.platform === p)?.account_name})`).join(" and ");
-    if (!window.confirm(`Post this reel to ${where} now? This publishes it for real.`)) return;
+    if (!(await confirm({ title: "Post this reel?", body: `This publishes it to ${where} for real.`, confirmLabel: "Publish" }))) return;
     setBusy(true);
     setErr("");
     try {
@@ -54,8 +62,19 @@ export function PublishPanel({ topicId, draftNo, channelId, isAdmin, connections
   const canPublish = isAdmin && pick.length > 0 && !busy;
 
   return (
-    <section className="card space-y-4">
-      <h2 className="text-sm font-semibold">Publish</h2>
+    <>
+      {!autoOpen && <button className="btn-ok" onClick={() => dlg.current?.showModal()}>Publish</button>}
+      <dialog
+        ref={dlg}
+        onClose={() => onClose?.()}
+        onClick={(e) => { if (e.target === dlg.current) dlg.current?.close(); }}
+        className="m-auto w-[min(34rem,92vw)] border-2 border-black bg-surface p-0 text-white shadow-[8px_8px_0_#000] backdrop:bg-black/70"
+      >
+    <section className="space-y-4 p-5">
+      <div className="flex items-center justify-between gap-3">
+        <h2>Publish to</h2>
+        <button type="button" aria-label="Close" className="btn-ghost !px-2.5 !py-1" onClick={() => dlg.current?.close()}>X</button>
+      </div>
 
       {publications.length > 0 && (
         <ul className="space-y-2">
@@ -80,19 +99,32 @@ export function PublishPanel({ topicId, draftNo, channelId, isAdmin, connections
 
       {isAdmin && (
         <div className="space-y-3">
-          {["youtube", "instagram"].filter(open).map((p) => {
-            const c = connections.find((x) => x.platform === p);
-            const ok = c?.status === "connected";
-            return (
-              <label key={p} className={`flex items-center gap-3 text-sm ${ok ? "" : "opacity-60"}`}>
-                <input type="checkbox" disabled={!ok} checked={ok && pick.includes(p)} onChange={() => toggle(p)} />
-                <span>{LABEL[p]}</span>
-                <span className="text-xs text-muted">
-                  {ok ? c!.account_name : <>{c ? "needs reconnecting" : "not connected"} · <Link className="text-accent hover:underline" href={`/admin/channels/${channelId}`}>connect it on the channel page</Link></>}
-                </span>
-              </label>
-            );
-          })}
+          <div className="grid grid-cols-2 gap-3">
+            {["youtube", "instagram"].map((p) => {
+              const c = connections.find((x) => x.platform === p);
+              const ok = c?.status === "connected";
+              const done = !open(p);
+              const on = ok && !done && pick.includes(p);
+              return (
+                <div key={p} className={`flex flex-col items-center gap-3 border-2 p-4 text-center ${on ? "border-accent bg-surface2 shadow-[4px_4px_0_#000]" : "border-line bg-surface2/50"} ${ok && !done ? "" : "opacity-70"}`}>
+                  <button
+                    type="button"
+                    aria-pressed={on}
+                    disabled={!ok || done}
+                    onClick={() => toggle(p)}
+                    className="flex flex-col items-center gap-3 disabled:cursor-not-allowed"
+                  >
+                    {p === "youtube" ? <PixelYouTube on={on} /> : <PixelInstagram on={on} />}
+                    <span className="font-display text-xs">{LABEL[p]}</span>
+                  </button>
+                  <span className="text-xs text-muted">
+                    {done ? "already posted" : ok ? c!.account_name : <>{c ? "needs reconnecting" : "not connected"}<br /><Link className="text-accent hover:underline" href={`/admin/channels/${channelId}`}>connect on the channel page</Link></>}
+                  </span>
+                  {ok && !done && <span className={`border-2 border-black px-2 font-mono text-base leading-tight ${on ? "bg-accent text-white" : "bg-line text-muted"}`}>{on ? "selected" : "tap to select"}</span>}
+                </div>
+              );
+            })}
+          </div>
           {open("youtube") && pick.includes("youtube") && (
             <div className="flex items-center gap-2 text-sm">
               <label htmlFor="priv" className="text-xs text-muted">YouTube visibility</label>
@@ -113,5 +145,12 @@ export function PublishPanel({ topicId, draftNo, channelId, isAdmin, connections
       {!isAdmin && publications.length === 0 && <p className="text-sm text-muted">Only an admin can publish.</p>}
       {err && <p className="text-sm text-red-300" role="alert">{err}</p>}
     </section>
+      </dialog>
+      {confirmDialog}
+    </>
   );
+}
+
+export function PublishLocked() {
+  return <button className="btn-ok" disabled title="Approve this reel before publishing">Publish</button>;
 }

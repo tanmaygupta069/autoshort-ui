@@ -16,8 +16,13 @@ export function DecisionForm({ topicId, draft }: { topicId: string; draft: numbe
     setErr("");
     try {
       await call(`drafts/${topicId}/${draft}/decision`, "POST", { action, feedback: text });
-      router.push("/reels");
-      router.refresh();
+      if (action === "approve") {
+        router.refresh(); // stay here: the Publish button above is now live
+        setBusy(false);
+      } else {
+        router.push("/reels");
+        router.refresh();
+      }
     } catch (e) {
       setErr((e as Error).message);
       setBusy(false);

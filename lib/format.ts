@@ -14,16 +14,16 @@ export const STATUS_LABEL: Record<string, string> = {
 };
 
 export const STATUS_TONE: Record<string, string> = {
-  proposed: "bg-amber-500/15 text-amber-300",
-  queued: "bg-sky-500/15 text-sky-300",
-  in_progress: "bg-violet-500/15 text-violet-300",
-  ready_for_review: "bg-amber-500/15 text-amber-300",
-  revision_requested: "bg-orange-500/15 text-orange-300",
-  approved: "bg-emerald-500/15 text-emerald-300",
-  published: "bg-emerald-500/15 text-emerald-300",
-  failed: "bg-red-500/15 text-red-300",
-  rejected: "bg-zinc-500/20 text-zinc-300",
-  superseded: "bg-zinc-500/20 text-zinc-400",
+  proposed: "bg-amber-500/30 text-amber-200",
+  queued: "bg-sky-500/30 text-sky-200",
+  in_progress: "bg-violet-500/30 text-violet-200",
+  ready_for_review: "bg-amber-500/30 text-amber-200",
+  revision_requested: "bg-orange-500/30 text-orange-200",
+  approved: "bg-emerald-500/30 text-emerald-200",
+  published: "bg-emerald-500/30 text-emerald-200",
+  failed: "bg-red-500/30 text-red-200",
+  rejected: "bg-zinc-500/30 text-zinc-200",
+  superseded: "bg-zinc-500/30 text-zinc-200",
 };
 
 export function when(iso: string | null | undefined): string {

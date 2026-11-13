@@ -3,7 +3,8 @@ import { notFound } from "next/navigation";
 import { Badge } from "@/components/Badge";
 import { DecisionForm } from "@/components/DecisionForm";
 import { NoteForm } from "@/components/NoteForm";
-import { PublishPanel } from "@/components/PublishPanel";
+import { ReelVideo } from "@/components/ReelVideo";
+import { PublishLocked, PublishPanel } from "@/components/PublishPanel";
 import { backend, getJson } from "@/lib/server/api";
 import { when } from "@/lib/format";
 import type { Connection, Me, Publication, TopicDetail } from "@/lib/types";
@@ -37,19 +38,18 @@ export default async function ReelPage({ params }: PageProps<"/reels/[topic]/[dr
         <h1 className="text-xl font-semibold">{d.yt_title || t.topic}</h1>
         <Badge status={d.status} />
       </div>
-      <p className="text-sm text-muted">{t.topic_id} · draft {d.draft} of {t.drafts.length} · {d.duration_s ? `${d.duration_s}s · ` : ""}updated {when(d.updated_at)}</p>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <p className="text-sm text-muted">{t.topic_id} · draft {d.draft} of {t.drafts.length} · {d.duration_s ? `${d.duration_s}s · ` : ""}updated {when(d.updated_at)}</p>
+        {publishable && me ? (
+          <PublishPanel topicId={t.topic_id} draftNo={d.draft} channelId={t.channel} isAdmin={me.role === "admin"} connections={connections} publications={publications} />
+        ) : (
+          <PublishLocked />
+        )}
+      </div>
 
       <div className="grid gap-6 md:grid-cols-[18rem_1fr]">
         {media.video_url ? (
-          <video
-            key={media.video_url}
-            className="aspect-[9/16] w-full max-w-72 rounded-xl border border-line bg-black object-contain"
-            src={media.video_url}
-            poster={media.thumb_url ?? undefined}
-            controls
-            playsInline
-            preload="metadata"
-          />
+          <ReelVideo key={`${t.topic_id}-${d.draft}`} src={media.video_url} poster={media.thumb_url ?? undefined} />
         ) : (
           <div className="card flex aspect-[9/16] w-full max-w-72 items-center justify-center text-center text-sm text-muted">
             No stored video for this draft yet.
@@ -78,9 +78,6 @@ export default async function ReelPage({ params }: PageProps<"/reels/[topic]/[dr
             )}
           </section>
           {d.status === "ready_for_review" && <DecisionForm topicId={t.topic_id} draft={d.draft} />}
-          {publishable && me && (
-            <PublishPanel topicId={t.topic_id} draftNo={d.draft} channelId={t.channel} isAdmin={me.role === "admin"} connections={connections} publications={publications} />
-          )}
           {d.feedback && d.status !== "ready_for_review" && (
             <div className="card text-sm"><div className="label">Feedback given</div>{d.feedback}</div>
           )}

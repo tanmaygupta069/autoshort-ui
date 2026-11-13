@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { PageHead } from "@/components/PageHead";
 import { Badge } from "@/components/Badge";
 import { getJson } from "@/lib/server/api";
 import { selectedChannel, withChannel } from "@/lib/server/channel";
@@ -6,7 +7,8 @@ import { ago } from "@/lib/format";
 import type { Channel, Draft, Summary, Topic } from "@/lib/types";
 
 export default async function Overview({ searchParams }: PageProps<"/">) {
-  const channel = await selectedChannel(await searchParams);
+  const sp = await searchParams;
+  const channel = await selectedChannel(sp);
   const [summary, waiting, proposed, channels] = await Promise.all([
     getJson<Summary>(withChannel("/summary", channel)),
     getJson<Draft[]>(withChannel("/drafts?status=ready_for_review", channel)),
@@ -23,6 +25,7 @@ export default async function Overview({ searchParams }: PageProps<"/">) {
   ];
   return (
     <div className="space-y-8">
+      <PageHead title="Overview" searchParams={sp} />
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         {tiles.map((t) => (
           <Link key={t.label} href={t.href} className={`card block transition hover:border-accent ${t.hot ? "border-amber/60" : ""} ${t.bad ? "border-red-500/50" : ""}`}>
