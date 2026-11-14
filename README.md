@@ -5,10 +5,6 @@ manage users. It holds no data itself.
 
 **Demo video:** [Watch the walkthrough](https://drive.google.com/file/d/1WqrpJI8EXRyl1fmtdZoD1UKOBQtiHMAx/view?usp=drive_link)
 
-```
-Browser ──▶ Next.js on Vercel ──(server-side, shared secret + session token)──▶ Tailscale Funnel ──▶ FastAPI on the Mac mini
-```
-
 - **Sign-in:** invited email + 6-digit code (sent by the backend). The backend creates a server-side session; this app keeps
   its token in an `HttpOnly`, `Secure`, `SameSite=Lax` cookie (`as_session`) and never exposes it, the backend URL or the
   proxy secret to the browser.
