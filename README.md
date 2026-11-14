@@ -3,6 +3,8 @@
 Next.js (App Router) front end for the OpenMontage Reels pipeline: review research ideas and produced reels, leave notes,
 manage users. It holds no data itself.
 
+**Demo video:** [Watch the walkthrough](https://drive.google.com/file/d/1WqrpJI8EXRyl1fmtdZoD1UKOBQtiHMAx/view?usp=drive_link)
+
 ```
 Browser ──▶ Next.js on Vercel ──(server-side, shared secret + session token)──▶ Tailscale Funnel ──▶ FastAPI on the Mac mini
 ```
