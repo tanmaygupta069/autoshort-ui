@@ -39,3 +39,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# local-only tooling (not part of the app)
+!.env.example
+.agents/
+.claude/
+skills-lock.json
